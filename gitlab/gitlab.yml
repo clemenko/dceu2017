@@ -1,0 +1,35 @@
+version: "3.3"
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    ports:
+      - 80:80
+      - 443:443
+      - 2022:22
+    volumes:
+      - /srv/gitlab/config:/etc/gitlab
+      - /srv/gitlab/logs:/var/log/gitlab
+      - /srv/gitlab/data:/var/opt/gitlab
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      gitlab:
+
+  gitlab-runner:
+    image: gitlab/gitlab-runner:alpine
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /srv/gitlab-runner/config:/etc/gitlab-runner
+      - /root/.docker:/root/.docker
+      - /root/.notary:/root/.notary
+    networks:
+      gitlab:
+
+networks:
+  gitlab:
+
+
+
+#docker run --detach     --hostname gitlab.dockr.life   --publish 443:443 --publish 80:80 --publish 2022:22     --name gitlab     --restart always     --volume /srv/gitlab/config:/etc/gitlab     --volume /srv/gitlab/logs:/var/log/gitlab     --volume /srv/gitlab/data:/var/opt/gitlab     gitlab/gitlab-ce:latest
+
+
+#docker run -d --name gitlab-runner --restart always   -v /srv/gitlab-runner/config:/etc/gitlab-runner   -v /var/run/docker.sock:/var/run/docker.sock   gitlab/gitlab-runner:latest

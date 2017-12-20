@@ -1,0 +1,43 @@
+# Official docker image.
+image: docker:17.06
+
+stages:
+  - build
+  - push
+  - test
+  - staging-deploy-up
+  - production-deploy-up
+
+variables:
+  DOCKER_CLI_OPTIONS: "-H $UCP_HOST --tlsverify --tlscacert=$UCP_CA_CERT --tlscert=$UCP_CERT --tlskey=$UCP_KEY"
+
+build:
+  stage: build
+  script:
+    - 'if [ $CI_PIPELINE_SOURCE -eq "schedule" ]; then docker build --disable-content-trust --no-cache --pull -t $IMAGE_NAME:latest -t $IMAGE_NAME:$CI_BUILD_REF .; else docker build --disable-content-trust -t $IMAGE_NAME:latest -t $IMAGE_NAME:$CI_BUILD_REF .; fi'
+    - 'if [ $CI_BUILD_TAG ]; then docker tag $IMAGE_NAME:$CI_BUILD_REF $IMAGE_NAME:$CI_BUILD_TAG; fi'
+
+staging-push:
+  environment: staging
+  stage: push
+  before_script:
+    - docker login -u $DTR_USERNAME -p $DTR_PASSWORD $DTR_SERVER
+  script:
+    - docker push $IMAGE_NAME:latest
+    - docker push $IMAGE_NAME:$CI_BUILD_REF
+    - 'if [ $CI_BUILD_TAG ]; then docker push $IMAGE_NAME:$CI_BUILD_TAG; fi'
+
+staging-deploy:up:
+  environment: staging
+  stage: staging-deploy-up
+  script:
+    - docker $DOCKER_CLI_OPTIONS stack deploy --with-registry-auth -c docker-compose.staging.yml aspdotnetcoremvc11_staging
+
+production-deploy:up:
+  environment: production
+  stage: production-deploy-up
+  before_script:
+    - 'if [ ! $CI_BUILD_TAG ]; then echo "untagged commit, skipping"; exit 0; fi'
+  script:
+    - docker $DOCKER_CLI_OPTIONS stack deploy --with-registry-auth -c docker-compose.prod.yml aspdotnetcoremvc11_prod
+  when: manual

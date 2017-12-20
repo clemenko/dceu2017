@@ -1,0 +1,17 @@
+# Official docker image.
+variables:
+  DOCKER_DRIVER: overlay2
+
+image: docker:latest
+
+before_script:
+  - docker login -u $DTR_USERNAME -p $DTR_PASSWORD $DTR_SERVER
+
+build:
+  stage: build
+  script:
+#    - docker build --pull -t dtr.dockr.life/admin/"$CI_PROJECT_NAME"_build:$CI_JOB_ID .
+    - echo " building dtr.dockr.life/admin/"$CI_PROJECT_NAME_build:$CI_JOB_ID
+    - docker build -t dtr.dockr.life/admin/"$CI_PROJECT_NAME"_build:$CI_JOB_ID .
+    - docker push dtr.dockr.life/admin/"$CI_PROJECT_NAME"_build:$CI_JOB_ID
+#    - docker rmi dtr.dockr.life/admin/"$CI_PROJECT_NAME"_build:$CI_JOB_ID

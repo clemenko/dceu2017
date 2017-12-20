@@ -1,0 +1,52 @@
+version: "3.3"
+services:
+  app:
+    image: dtr.dockr.life/admin/flask
+    deploy:
+      replicas: 4
+      update_config:
+        parallelism: 2
+      mode: replicated
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      labels:
+          com.docker.ucp.access.label: "/prod"
+          com.docker.ucp.mesh.http.5000: "external_route=http://app.dockr.life,internal_port=5000"
+    ports:
+      - 5000:5000
+    networks:
+      kv:
+      ucp-hrm:
+    depends_on:
+      - redis
+    secrets:
+      - source: demo_title_v1
+        target: demo_title
+        uid: "0"
+        gid: "0"
+        mode: 0400
+
+  redis:
+    image: redis:alpine
+    deploy:
+      labels:
+        com.docker.ucp.access.label: "/prod"
+    networks:
+      kv:
+
+networks:
+  kv:
+    labels:
+      com.docker.ucp.access.label: "/prod"
+    driver: overlay
+    driver_opts:
+      encrypted: ""
+  ucp-hrm:
+    external: true
+
+secrets:
+  demo_title_v1:
+    external: true
