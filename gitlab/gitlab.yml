@@ -27,9 +27,7 @@ services:
 networks:
   gitlab:
 
+# mkdir -p /srv/gitlab/{config,data,logs} /srv/gitlab-runner/config ~/.notary ~/.docker
 
 
-#docker run --detach     --hostname gitlab.dockr.life   --publish 443:443 --publish 80:80 --publish 2022:22     --name gitlab     --restart always     --volume /srv/gitlab/config:/etc/gitlab     --volume /srv/gitlab/logs:/var/log/gitlab     --volume /srv/gitlab/data:/var/opt/gitlab     gitlab/gitlab-ce:latest
-
-
-#docker run -d --name gitlab-runner --restart always   -v /srv/gitlab-runner/config:/etc/gitlab-runner   -v /var/run/docker.sock:/var/run/docker.sock   gitlab/gitlab-runner:latest
+#docker exec -it $(docker ps |grep runner|awk '{print $1}') gitlab-runner register -n --executor "docker" --docker-image alpine --url http://68.183.96.15/ --registration-token y1wTxy66sjxEt9PazxsZ --tag-list "docker" --run-untagged --locked="false" --description "docker-runner"
