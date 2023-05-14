@@ -1,5 +1,5 @@
 FROM alpine:edge
-LABEL maintainer="clemenko@docker.com"
+LABEL maintainer="clemenko@gmail.com"
 RUN apk -U upgrade && apk add --no-cache curl py2-pip  &&\
     pip install --no-cache-dir --upgrade pip requests &&\
     pip install --no-cache-dir flask &&\
